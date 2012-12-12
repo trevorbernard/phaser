@@ -42,6 +42,16 @@
 (defmacro event-translator [& args]
   `(event-translator (fn [] ~@args)))
 
+(defn ^ExceptionHandler exception-handler
+  [on-event on-start on-shutdown]
+  (reify com.lmax.disruptor.ExceptionHandler
+    (handleEventException [_ exception sequence event]
+      (on-event exception sequence event))
+    (handleOnStartException [_ exception]
+      (on-start exception))
+    (handleOnShutdownException [_ exception]
+      (on-shutdown exception))))
+
 (defn disruptor [^EventFactory factory ^ExecutorService executor size ]
   (Disruptor. factory executor (int size)))
 

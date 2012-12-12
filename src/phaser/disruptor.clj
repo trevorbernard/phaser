@@ -40,7 +40,7 @@
       (handler event sequence))))
 
 (defmacro event-translator [& args]
-  `(event-translator (fn ~@args)))
+  `(event-translator* (fn ~@args)))
 
 (defn ^ExceptionHandler exception-handler
   [on-event on-start on-shutdown]

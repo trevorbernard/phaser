@@ -44,6 +44,9 @@
 (defn disruptor [^EventFactory factory ^ExecutorService executor size ]
   (Disruptor. factory executor (int size)))
 
+(defn publish-event [^Disruptor disruptor ^Object event]
+  (.publishEvent disruptor event))
+
 (defn dispatch-fn [_ handlers]
   (when (seq handlers)
     (type (first handlers))))

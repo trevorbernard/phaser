@@ -9,7 +9,7 @@
 
 (def claim-strategy
   {:single-threaded (fn [size] (SingleThreadedClaimStrategy. (int size)))
-   :multi-threaded (fn [size] (MultiThreadedClaimStrategy. (int size)))})
+   :multi-threaded  (fn [size] (MultiThreadedClaimStrategy. (int size)))})
 
 (def wait-strategy
   {:block (fn [] (BlockingWaitStrategy.))
@@ -44,29 +44,28 @@
 (defn disruptor [^EventFactory factory ^ExecutorService executor size ]
   (Disruptor. factory executor (int size)))
 
-(defmulti handle-events-with #(class %2))
+(defn dispatch-fn [_ handlers]
+  (when (seq handlers)
+    (type (first handlers))))
 
-;; Lame/non-elegant hack to get array type for dispatching
-(def EventHandlerArray (Class/forName "[Lcom.lmax.disruptor.EventHandler;"))
-(def EventProcessorArray (Class/forName "[Lcom.lmax.disruptor.EventProcessor;"))
+(defmulti handle-events-with dispatch-fn)
 
-(defmethod handle-events-with EventHandlerArray [^Disruptor disrupter & handlers]
+(defmethod handle-events-with EventHandler [^Disruptor disruptor & handlers]
   (.handleEventsWith disruptor (into-array EventHandler handlers)))
 
-(defmethod handle-events-with EventProcessorArray [^Disruptor disrupter & handlers]
+(defmethod handle-events-with EventProcessor [^Disruptor disruptor & handlers]
   (.handleEventsWith disruptor (into-array EventProcessor  handlers)))
 
-(defn handle-events-with* [^Disruptor disruptor & handlers]
-  (.handleEventsWith disruptor (into-array EventHandler handlers)))
+(defmethod handle-events-with :default [_ _]
+  (throw (Exception. "Unsupported handle-event-with dispatch type")))
 
-(defmulti then #(class %2))
+(defmulti then dispatch-fn)
 
-(defmethod then EventHandlerArray [^Disruptor disrupter & handlers]
+(defmethod then EventHandler [^Disruptor disruptor & handlers]
   (.then disruptor (into-array EventHandler handlers)))
 
-(defmethod then EventProcessorArray [^Disruptor disrupter & handlers]
+(defmethod then EventProcessor [^Disruptor disruptor & handlers]
   (.then disruptor (into-array EventProcessor  handlers)))
 
-(defn then* [^Disruptor disruptor & handlers]
-  (into-array)
-  (.then disruptor (into-array EventHandler handlers)))
+(defmethod then :default [_ _]
+  (throw (Exception. "Unsupported then dispatch type")))

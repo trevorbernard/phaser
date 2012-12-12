@@ -1,9 +1,10 @@
 (ns phaser.disruptor
+    (:refer-clojure :exclude [get])
   (:import [com.lmax.disruptor EventFactory EventTranslator EventHandler
             ClaimStrategy WaitStrategy MultiThreadedClaimStrategy
             SingleThreadedClaimStrategy BlockingWaitStrategy
             SleepingWaitStrategy YieldingWaitStrategy BusySpinWaitStrategy
-            EventProcessor RingBuffer]
+            EventProcessor RingBuffer ExceptionHandler]
            [com.lmax.disruptor.dsl Disruptor]
            [java.util.concurrent ExecutorService]))
 
@@ -72,3 +73,41 @@
 
 (defmethod then :default [_ _]
   (throw (Exception. "Unsupported then dispatch type")))
+
+(defmulti after dispatch-fn)
+
+(defmethod after EventHandler [^Disruptor disruptor & handlers]
+  (.after disruptor (into-array EventHandler handlers)))
+
+(defmethod after EventProcessor [^Disruptor disruptor & handlers]
+  (.after disruptor (into-array EventProcessor  handlers)))
+
+(defmethod then :default [_ _]
+  (throw (Exception. "Unsupported then dispatch type")))
+
+(defn handle-exceptions-with [^Disruptor disruptor ^ExceptionHandler exception-handler]
+  (.handleExceptionsWith disruptor exception-handler))
+
+(defn handle-exceptions-for [^Disruptor disruptor ^EventHandler event-handler]
+  (.handleExceptionsFor disruptor event-handler))
+
+(defn ^RingBuffer start [^Disruptor disruptor]
+  (.start disruptor))
+
+(defn halt [^Disruptor disruptor]
+  (.halt disruptor))
+
+(defn shutdown [^Disruptor disruptor]
+  (.shutdown disruptor))
+
+(defn get-ring-buffer [^Disruptor disruptor]
+  (.getRingBuffer disruptor))
+
+(defn get-cursor [^Disruptor disruptor]
+  (.getCursor disruptor))
+
+(defn get-buffer-size [^Disruptor disruptor]
+  (.getBufferSize disruptor))
+
+(defn get [^Disruptor disruptor ^long sequence]
+  (.get disruptor sequence))

@@ -24,7 +24,7 @@
       (handler))))
 
 (defmacro event-factory [& args]
-  `(event-factory* (fn [] ~@args)))
+  `(event-factory* (fn ~@args)))
 
 (defn event-handler* [handler]
   (reify com.lmax.disruptor.EventHandler
@@ -32,7 +32,7 @@
       (handler event sequence end-of-batch?))))
 
 (defmacro event-handler [& args]
-  `(event-handler* (fn [] ~@args)))
+  `(event-handler* (fn ~@args)))
 
 (defn event-translator* [handler]
   (reify com.lmax.disruptor.EventTranslator
@@ -40,7 +40,7 @@
       (handler event sequence))))
 
 (defmacro event-translator [& args]
-  `(event-translator (fn [] ~@args)))
+  `(event-translator (fn ~@args)))
 
 (defn ^ExceptionHandler exception-handler
   [on-event on-start on-shutdown]

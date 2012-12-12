@@ -52,8 +52,8 @@
     (handleOnShutdownException [_ exception]
       (on-shutdown exception))))
 
-(defn disruptor [^EventFactory factory ^ExecutorService executor size ]
-  (Disruptor. factory executor (int size)))
+(defn disruptor [^EventFactory factory size ^ExecutorService executor]
+  (Disruptor. factory (int size) executor))
 
 (defn publish-event [^Disruptor disruptor ^Object event]
   (.publishEvent disruptor event))

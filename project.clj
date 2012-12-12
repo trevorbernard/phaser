@@ -3,5 +3,4 @@
   :url "https://github.com/userevents/phaser"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [com.googlecode.disruptor/disruptor "2.10.4"]]
-  :main phaser.test
   :min-lein-version "2.0.0")

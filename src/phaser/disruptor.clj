@@ -5,7 +5,7 @@
             SingleThreadedClaimStrategy BlockingWaitStrategy
             SleepingWaitStrategy YieldingWaitStrategy BusySpinWaitStrategy
             EventProcessor RingBuffer ExceptionHandler]
-           [com.lmax.disruptor.dsl Disruptor]
+           [com.lmax.disruptor.dsl Disruptor EventHandlerGroup]
            [java.util.concurrent ExecutorService]))
 
 (def claim-strategy
@@ -59,8 +59,10 @@
   (.publishEvent disruptor event))
 
 (defn dispatch-fn [_ handlers]
-  (when (seq handlers)
-    (type (first handlers))))
+  (when handlers
+    (if (seq? handlers)
+      (type (first handlers))
+      (type handlers))))
 
 (defmulti handle-events-with dispatch-fn)
 
@@ -68,7 +70,7 @@
   (.handleEventsWith disruptor (into-array EventHandler handlers)))
 
 (defmethod handle-events-with EventProcessor [^Disruptor disruptor & handlers]
-  (.handleEventsWith disruptor (into-array EventProcessor  handlers)))
+  (.handleEventsWith disruptor (into-array EventProcessor handlers)))
 
 (defmethod handle-events-with :default [_ _]
   (throw (Exception. "Unsupported handle-event-with dispatch type")))
@@ -92,7 +94,7 @@
 (defmethod after EventProcessor [^Disruptor disruptor & handlers]
   (.after disruptor (into-array EventProcessor  handlers)))
 
-(defmethod then :default [_ _]
+(defmethod after :default [_ _]
   (throw (Exception. "Unsupported then dispatch type")))
 
 (defn handle-exceptions-with [^Disruptor disruptor ^ExceptionHandler exception-handler]

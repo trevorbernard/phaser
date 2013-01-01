@@ -17,3 +17,15 @@
       (is (= "hi" event))
       (is (= 1337 sequence))
       (is (not end-of-batch?)))))
+
+(deftest event-translator-test []
+  (let [world (atom nil)
+        translator (event-translator
+                    [event sequence]
+                    (reset! world {:event (str event "-translated")
+                                   :sequence sequence}))]
+    (is (instance? EventTranslator translator))
+    (.translateTo translator "hi" 1337)
+    (let [{:keys [event sequence]} @world]
+      (is (= "hi-translated" event))
+      (is (= 1337 sequence)))))

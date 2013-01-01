@@ -58,11 +58,9 @@
 (defn publish-event [^Disruptor disruptor ^Object event]
   (.publishEvent disruptor event))
 
-(defn dispatch-fn [_ handlers]
-  (when handlers
-    (if (seq? handlers)
-      (type (first handlers))
-      (type handlers))))
+(defn dispatch-fn [_ & handlers]
+  (when (seq handlers)
+    (type (first handlers))))
 
 (defmulti handle-events-with dispatch-fn)
 

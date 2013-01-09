@@ -1,22 +1,9 @@
 (ns phaser.disruptor
-    (:refer-clojure :exclude [get])
-  (:import [com.lmax.disruptor EventFactory EventTranslator EventHandler
-            ClaimStrategy WaitStrategy MultiThreadedClaimStrategy
-            SingleThreadedClaimStrategy BlockingWaitStrategy
-            SleepingWaitStrategy YieldingWaitStrategy BusySpinWaitStrategy
-            EventProcessor RingBuffer ExceptionHandler]
+  (:import [com.lmax.disruptor ClaimStrategy EventFactory EventHandler
+            EventProcessor EventTranslator ExceptionHandler RingBuffer
+            WaitStrategy]
            [com.lmax.disruptor.dsl Disruptor EventHandlerGroup]
            [java.util.concurrent ExecutorService]))
-
-(def claim-strategy
-  {:single-threaded (fn [size] (SingleThreadedClaimStrategy. (int size)))
-   :multi-threaded  (fn [size] (MultiThreadedClaimStrategy. (int size)))})
-
-(def wait-strategy
-  {:block (fn [] (BlockingWaitStrategy.))
-   :yield (fn [] (YieldingWaitStrategy.))
-   :sleep (fn [] (SleepingWaitStrategy.))
-   :spin  (fn [] (BusySpinWaitStrategy.))})
 
 (defn event-factory* [handler]
   (reify EventFactory
@@ -121,6 +108,3 @@
 
 (defn get-buffer-size [^Disruptor disruptor]
   (.getBufferSize disruptor))
-
-(defn get [^Disruptor disruptor ^long sequence]
-  (.get disruptor sequence))

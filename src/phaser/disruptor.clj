@@ -1,11 +1,12 @@
 (ns phaser.disruptor
   (:import [com.lmax.disruptor ClaimStrategy EventFactory EventHandler
             EventProcessor EventTranslator ExceptionHandler RingBuffer
-            WaitStrategy]
+            WaitStrategy Sequence SequenceBarrier BatchEventProcessor
+            EventPublisher]
            [com.lmax.disruptor.dsl Disruptor EventHandlerGroup]
            [java.util.concurrent ExecutorService]))
 
-(defn event-factory* [handler]
+(defn ^EventFactory event-factory* [handler]
   (reify EventFactory
     (newInstance [_]
       (handler))))
@@ -13,7 +14,7 @@
 (defmacro event-factory [& args]
   `(event-factory* (fn ~@args)))
 
-(defn event-handler* [handler]
+(defn ^EventHandler event-handler* [handler]
   (reify com.lmax.disruptor.EventHandler
     (onEvent [_ event sequence end-of-batch?]
       (handler event sequence end-of-batch?))))
@@ -21,7 +22,7 @@
 (defmacro event-handler [& args]
   `(event-handler* (fn ~@args)))
 
-(defn event-translator* [handler]
+(defn ^EventTranslator event-translator* [handler]
   (reify com.lmax.disruptor.EventTranslator
     (translateTo [_ event sequence]
       (handler event sequence))))
@@ -108,3 +109,37 @@
 
 (defn get-buffer-size [^Disruptor disruptor]
   (.getBufferSize disruptor))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Helpers for manually rolling the disruptor
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ^RingBuffer create-ring-buffer
+  ([^EventFactory factory ^Integer buffer-size]
+     (RingBuffer. factory buffer-size))
+  ([^EventFactory factory ^ClaimStrategy claim-strategy ^WaitStrategy wait-strategy]
+     (RingBuffer. factory claim-strategy wait-strategy)))
+
+(defn ^SequenceBarrier create-sequence-barrier
+  [^RingBuffer ring-buffer & sequences]
+  (.newBarrier ring-buffer (into-array Sequence sequences)))
+
+(defn set-gating-sequences
+  [^RingBuffer ring-buffer & sequences]
+  (.setGatingSequences ring-buffer (into-array Sequence sequences)))
+
+(defn ^BatchEventProcessor create-batch-event-processor
+  [^RingBuffer ring-buffer ^SequenceBarrier barrier ^EventHandler handler]
+  (BatchEventProcessor. ring-buffer barrier handler))
+
+(defn stop-event-processor
+  [^BatchEventProcessor processor]
+  (.halt processor))
+
+(defn ^EventPublisher create-event-publisher
+  [^RingBuffer ring-buffer]
+  (EventPublisher. ring-buffer))
+
+(defn send-event-with-publisher
+  [^EventPublisher publisher ^EventTranslator translator]
+  (.publishEvent publisher translator))

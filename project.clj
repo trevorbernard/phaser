@@ -1,4 +1,4 @@
-(defproject userevents/phaser "0.1.1"
+(defproject userevents/phaser "0.1.2-SNAPSHOT"
   :description "A Clojure DSL for the LMAX Disruptor"
   :url "https://github.com/userevents/phaser"
   :dependencies [[org.clojure/clojure "1.4.0"]

@@ -2,7 +2,7 @@
   (:import [com.lmax.disruptor ClaimStrategy EventFactory EventHandler
             EventProcessor EventTranslator ExceptionHandler RingBuffer
             WaitStrategy Sequence SequenceBarrier BatchEventProcessor
-            EventPublisher]
+            EventPublisher WorkHandler WorkerPool]
            [com.lmax.disruptor.dsl Disruptor EventHandlerGroup]
            [java.util.concurrent ExecutorService]))
 
@@ -39,6 +39,20 @@
       (on-start exception))
     (handleOnShutdownException [_ exception]
       (on-shutdown exception))))
+
+(defn ^WorkHandler work-handler* [handler]
+  (reify com.lmax.disruptor.WorkHandler
+    (onEvent [_ event]
+      (handler event))))
+
+(defmacro work-handler [& args]
+  `(work-handler* (fn ~@args)))
+
+(defn worker-pool
+  ([^EventFactory factory ^ClaimStrategy claim ^WaitStrategy wait ^ExceptionHandler exception handlers]
+   (WorkerPool. factory claim wait exception (into-array WorkHandler handlers)))
+  ([^RingBuffer ring ^SequenceBarrier barrier ^ExceptionHandler exception handlers]
+   (WorkerPool. ring barrier exception (into-array WorkHandler handlers))))
 
 (defn disruptor
   ([^EventFactory factory size ^ExecutorService executor]

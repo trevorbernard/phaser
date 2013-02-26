@@ -40,20 +40,6 @@
     (handleOnShutdownException [_ exception]
       (on-shutdown exception))))
 
-(defn ^WorkHandler work-handler* [handler]
-  (reify com.lmax.disruptor.WorkHandler
-    (onEvent [_ event]
-      (handler event))))
-
-(defmacro work-handler [& args]
-  `(work-handler* (fn ~@args)))
-
-(defn worker-pool
-  ([^EventFactory factory ^ClaimStrategy claim ^WaitStrategy wait ^ExceptionHandler exception handlers]
-   (WorkerPool. factory claim wait exception (into-array WorkHandler handlers)))
-  ([^RingBuffer ring ^SequenceBarrier barrier ^ExceptionHandler exception handlers]
-   (WorkerPool. ring barrier exception (into-array WorkHandler handlers))))
-
 (defn disruptor
   ([^EventFactory factory size ^ExecutorService executor]
      (Disruptor. factory (int size) executor))
@@ -157,3 +143,17 @@
 (defn send-event-with-publisher
   [^EventPublisher publisher ^EventTranslator translator]
   (.publishEvent publisher translator))
+
+(defn ^WorkHandler work-handler* [handler]
+  (reify com.lmax.disruptor.WorkHandler
+    (onEvent [_ event]
+      (handler event))))
+
+(defmacro work-handler [& args]
+  `(work-handler* (fn ~@args)))
+
+(defn worker-pool
+  ([^EventFactory factory ^ClaimStrategy claim ^WaitStrategy wait ^ExceptionHandler exception handlers]
+   (WorkerPool. factory claim wait exception (into-array WorkHandler handlers)))
+  ([^RingBuffer ring ^SequenceBarrier barrier ^ExceptionHandler exception handlers]
+   (WorkerPool. ring barrier exception (into-array WorkHandler handlers))))

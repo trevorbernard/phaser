@@ -4,7 +4,8 @@
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [com.googlecode.disruptor/disruptor "2.10.4"]]
+                 [com.lmax/disruptor "3.0.0.beta5"]
+                 [org.clojure/tools.macro "0.1.2"]]
   :profiles
   {:1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}
    :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}}

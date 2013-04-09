@@ -68,7 +68,8 @@
 
 (defmethod handle-events-with :default
   [& args]
-  (throw (IllegalArgumentException. "Unsupported arguments for handles-events-with")))
+  (throw
+   (IllegalArgumentException. "Unsupported arguments for handles-events-with")))
 
 (defmulti handle-events-with-worker-pool
   "Set up a worker pool to handle events from the ring buffer."
@@ -103,7 +104,8 @@
 (defn get-cursor [^Disruptor disruptor]
   (.getCursor disruptor))
 
-(defn handle-exceptions-with [^Disruptor disruptor ^ExceptionHandler exception-handler]
+(defn handle-exceptions-with [^Disruptor disruptor
+                              ^ExceptionHandler exception-handler]
   (.handleExceptionsWith disruptor exception-handler))
 
 (defmulti and (fn [_ b] (if (seq b)

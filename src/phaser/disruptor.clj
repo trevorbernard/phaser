@@ -111,7 +111,8 @@
                            (str "Parameter declaration missing"))))))
         params (first args)]
     `(let [body# (fn ~@args)]
-       (def ~name ((fn ~params (apply create-event-translator body# ~params)))))))
+       (def ~name
+         ((fn ~params (apply create-event-translator body# ~params)))))))
 
 #_ (deftranslator morecowbell
      [event sequence a b]
@@ -195,5 +196,7 @@
 (defn create-worker-pool
   ([^EventFactory factory ^ExceptionHandler exception-handler handlers]
      (WorkerPool. factory exception-handler (into-array EventHandler handlers)))
-  ([^RingBuffer rb ^SequenceBarrier sb ^ExceptionHandler exception-handler handlers]
-     (WorkerPool. rb sb exception-handler (into-array ExceptionHandler handlers))))
+  ([^RingBuffer rb ^SequenceBarrier sb ^ExceptionHandler exception-handler
+    handlers]
+     (WorkerPool. rb sb exception-handler (into-array ExceptionHandler
+                                                      handlers))))

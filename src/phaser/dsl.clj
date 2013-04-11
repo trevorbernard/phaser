@@ -12,7 +12,7 @@
    [java.util.concurrent Executor]))
 
 (defn- ^ProducerType convert-type [key]
-  (condp = key
+  (case key
     :multi ProducerType/MULTI
     :single ProducerType/SINGLE))
 
@@ -50,7 +50,7 @@
   [^Disruptor disruptor]
   (.getRingBuffer disruptor))
 
-(defn dispatch-fn [_ & handlers]
+(defn- dispatch-fn [_ & handlers]
   (when (seq handlers)
     (class (first handlers))))
 
@@ -98,19 +98,30 @@
 (defn ^SequenceBarrier get-barrier-for [^Disruptor disruptor & handlers]
   (.getBarrierFor disruptor (into-array EventHandler handlers)))
 
-(defn get-buffer-size [^Disruptor disruptor]
+(defn get-buffer-size
+  "The capacity of the data structure to hold entries."
+  [^Disruptor disruptor]
   (.getBufferSize disruptor))
 
-(defn get-cursor [^Disruptor disruptor]
+(defn get-cursor
+  "Get the value of the cursor indicating the published sequence."
+  [^Disruptor disruptor]
   (.getCursor disruptor))
 
-(defn handle-exceptions-with [^Disruptor disruptor
-                              ^ExceptionHandler exception-handler]
+(defn handle-exceptions-with
+  "Specify an exception handler to be used for any future event handlers.
+
+  Note that only event handlers set up after calling this method will use the
+  exception handler."
+  [^Disruptor disruptor ^ExceptionHandler exception-handler]
   (.handleExceptionsWith disruptor exception-handler))
 
-(defmulti and (fn [_ b] (if (seq b)
-                          (class (first b))
-                          (class b))))
+(defmulti and
+  "Create a new event handler group that combines the consumers in this group
+  with otherHandlerGroup."
+  (fn [_ b] (if (seq b)
+              (class (first b))
+              (class b))))
 
 (defmethod ^EventHandlerGroup and EventHandlerGroup [a ^EventHandlerGroup other]
   (.and a other))
@@ -122,8 +133,12 @@
   [& args]
   (throw (IllegalArgumentException. "Unsupported arguments for and")))
 
-(defn as-sequence-barrier [^EventHandlerGroup group]
+(defn ^SequenceBarrier as-sequence-barrier
+  "Create a dependency barrier for the processors in this group."
+  [^EventHandlerGroup group]
   (.asSequenceBarrier group))
 
-(defn ^EventHandlerGroup then [^EventHandlerGroup group & handlers]
+(defn ^EventHandlerGroup then
+  "Set up batch handlers to consume events from the ring buffer."
+  [^EventHandlerGroup group & handlers]
   (.then group (into-array EventHandler handlers)))

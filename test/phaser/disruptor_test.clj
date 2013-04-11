@@ -1,31 +1,27 @@
 (ns phaser.disruptor-test
-  (:use clojure.test
-        phaser.disruptor)
-  (:import [com.lmax.disruptor EventHandler EventTranslator]
-           com.lmax.disruptor.dsl.Disruptor))
+  (:require
+   [clojure.test :refer :all]
+   [phaser.disruptor :refer :all])
+  (:import
+   [com.lmax.disruptor EventFactory EventHandler]
+   [com.lmax.disruptor.dsl.Disruptor]))
+
+(deftest event-factory-test []
+  (let [factory (create-event-factory #(java.util.ArrayList.))]
+    (is (instance? EventFactory factory))
+    (let [obj1 (.newInstance factory)
+          obj2 (.newInstance factory)]
+      (is (instance? java.util.ArrayList obj1))
+      (is (instance? java.util.ArrayList obj2))
+      (is (not (identical? obj1 obj2))))))
 
 (deftest event-handler-test []
-  (let [world (atom nil)
-        handler (event-handler
-                 [event sequence end-of-batch?]
-                 (reset! world {:event event
-                                :sequence sequence
-                                :end-of-batch? end-of-batch?}))]
+  (let [data (atom [])
+        handler (create-event-handler
+                 (fn [event sequence end?]
+                   (swap! data conj [event sequence end?])))]
     (is (instance? EventHandler handler))
-    (.onEvent handler "hi" 1337 false)
-    (let [{:keys [event sequence end-of-batch?]} @world]
-      (is (= "hi" event))
-      (is (= 1337 sequence))
-      (is (not end-of-batch?)))))
-
-(deftest event-translator-test []
-  (let [world (atom nil)
-        translator (event-translator
-                    [event sequence]
-                    (reset! world {:event (str event "-translated")
-                                   :sequence sequence}))]
-    (is (instance? EventTranslator translator))
-    (.translateTo translator "hi" 1337)
-    (let [{:keys [event sequence]} @world]
-      (is (= "hi-translated" event))
-      (is (= 1337 sequence)))))
+    (.onEvent handler "a" 1 false)
+    (is (= ["a" 1 false] (first @data)))
+    (.onEvent handler "b" 2 true)
+    (is (= ["b" 2 true] (second @data)))))

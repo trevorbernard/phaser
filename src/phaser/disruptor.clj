@@ -65,7 +65,7 @@
   "Create a WorkHandler which is for processing units of work as they become
   available in the RingBuffer"
   [handler]
-  (reify com.lmax.disruptor.WorkHandler
+  (reify WorkHandler
     (onEvent [_ event]
       (handler event))))
 
@@ -139,22 +139,22 @@
     (.publishEvent rb translator)))
 
 (defmethod create-event-publisher EventTranslatorOneArg
-  [^RingBuffer rb ^EventTranslator translator]
+  [^RingBuffer rb ^EventTranslatorOneArg translator]
   (fn [arg0]
     (.publishEvent rb translator arg0)))
 
 (defmethod create-event-publisher EventTranslatorTwoArg
-  [^RingBuffer rb ^EventTranslator translator]
+  [^RingBuffer rb ^EventTranslatorTwoArg translator]
   (fn [arg0 arg1]
     (.publishEvent rb translator arg0 arg1)))
 
 (defmethod create-event-publisher EventTranslatorThreeArg
-  [^RingBuffer rb ^EventTranslator translator]
+  [^RingBuffer rb ^EventTranslatorThreeArg translator]
   (fn [arg0 arg1 arg2]
     (.publishEvent rb translator arg0 arg1 arg2)))
 
 (defmethod create-event-publisher EventTranslatorVararg
-  [^RingBuffer rb ^EventTranslator translator]
+  [^RingBuffer rb ^EventTranslatorVararg translator]
   (fn [args]
     (.publishEvent rb translator (object-array args))))
 

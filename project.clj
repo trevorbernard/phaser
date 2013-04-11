@@ -7,9 +7,10 @@
                  [com.lmax/disruptor "3.0.0"]
                  [org.clojure/tools.macro "0.1.2"]]
   :profiles
-  {:1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}
+  {:1.2.1 {:dependencies [[org.clojure/clojure "1.2.1"]]}
+   :1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}
    :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}}
-  :aliases {"all" ["with-profile" "dev:dev,1.3:dev,1.4"]}
+  :aliases {"all" ["with-profile" "dev:1.2.1:1.3:1.4"]}
   :min-lein-version "2.0.0"
   :pom-addition [:developers
                  [:developer

@@ -1,9 +1,11 @@
 (ns phaser.disruptor-test
-  (:require
-   [clojure.test :refer :all]
-   [phaser.disruptor :refer :all])
+  (:use
+   clojure.test
+   phaser.disruptor)
   (:import
-   [com.lmax.disruptor EventFactory EventHandler]
+   [com.lmax.disruptor EventFactory EventHandler EventTranslator
+    EventTranslatorOneArg EventTranslatorTwoArg EventTranslatorThreeArg
+    EventTranslatorVararg]
    [com.lmax.disruptor.dsl.Disruptor]))
 
 (deftest event-factory-test []
@@ -25,3 +27,48 @@
     (is (= ["a" 1 false] (first @data)))
     (.onEvent handler "b" 2 true)
     (is (= ["b" 2 true] (second @data)))))
+
+(deftest event-tranlator-test []
+  (let [translator (create-event-translator (fn [event sequence]
+                                              (reset! event "hi")))]
+    (is (instance? EventTranslator translator))
+    (let [event (atom nil)]
+      (.translateTo translator event 0)
+      (is (= "hi" @event)))))
+
+(deftest event-tranlator-one-test []
+  (let [translator (create-event-translator-one-arg
+                    (fn [event sequence arg0]
+                      (reset! event (str "hi" arg0))))]
+    (is (instance? EventTranslatorOneArg translator))
+    (let [event (atom nil)]
+      (.translateTo translator event 0 "!")
+      (is (= "hi!" @event)))))
+
+(deftest event-tranlator-two-test []
+  (let [translator (create-event-translator-two-arg
+                    (fn [event sequence arg0 arg1]
+                      (reset! event (str "hi" arg0 arg1))))]
+    (is (instance? EventTranslatorTwoArg translator))
+    (let [event (atom nil)]
+      (.translateTo translator event 0 "!" "?")
+      (is (= "hi!?" @event)))))
+
+(deftest event-tranlator-three-test []
+  (let [translator (create-event-translator-three-arg
+                    (fn [event sequence arg0 arg1 arg2]
+                      (reset! event (str "hi" arg0 arg1 arg2))))]
+    (is (instance? EventTranslatorThreeArg translator))
+    (let [event (atom nil)]
+      (.translateTo translator event 0 "!" "?" "!")
+      (is (= "hi!?!" @event)))))
+
+(deftest event-tranlator-var-test []
+  (let [translator (create-event-translator-var-arg
+                    (fn [event sequence args]
+                      (reset! event (str "hi" (apply str args)))))]
+    (is (instance? EventTranslatorVararg translator))
+    (let [event (atom nil)]
+      (.translateTo translator event 0 (into-array String
+                                                   ["a" "b" "c" "d" "e"]))
+      (is (= "hiabcde" @event)))))

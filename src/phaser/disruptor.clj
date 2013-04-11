@@ -1,7 +1,7 @@
 (ns phaser.disruptor
   "High Performance Inter-Thread Messaging Library"
-  (:require
-   [clojure.tools.macro :refer [name-with-attributes]])
+  (:use
+   [clojure.tools.macro :only [name-with-attributes]])
   (:import
    [com.lmax.disruptor EventFactory EventHandler EventTranslator
     EventTranslatorOneArg EventTranslatorTwoArg EventTranslatorThreeArg
@@ -56,13 +56,6 @@
     (onEvent [_ event]
       (handler event))))
 
-(defmacro defworkhandler
-  "Define a WorkHandler which is for processing units of work as they become
-  available in the RingBuffer."
-  [name & args]
-  (let [[name args] (name-with-attributes name args)]
-    `(def ~name (work-handler* (fn ~@args)))))
-
 (defn ^EventTranslator create-event-translator
   "Create an EventTranslator which translate (write) data representations into
   events claimed from the RingBuffer"
@@ -109,6 +102,34 @@
   [name bindings & args]
   (let [[name args] (name-with-attributes name args)]
     `(def ~name (create-event-translator (fn ~bindings ~@args)))))
+
+(defmacro deftranslator1
+  "Define a Disrupter EventTranslatorOneArg which translate (write) data
+  representations into events claimed from the RingBuffer"
+  [name bindings & args]
+  (let [[name args] (name-with-attributes name args)]
+    `(def ~name (create-event-translator-one-arg (fn ~bindings ~@args)))))
+
+(defmacro deftranslator2
+  "Define a Disrupter EventTranslatorTwoArg which translate (write) data
+  representations into events claimed from the RingBuffer"
+  [name bindings & args]
+  (let [[name args] (name-with-attributes name args)]
+    `(def ~name (create-event-translator-two-arg (fn ~bindings ~@args)))))
+
+(defmacro deftranslator3
+  "Define a Disrupter EventTranslatorThreeArg which translate (write) data
+  representations into events claimed from the RingBuffer"
+  [name bindings & args]
+  (let [[name args] (name-with-attributes name args)]
+    `(def ~name (create-event-translator-three-arg (fn ~bindings ~@args)))))
+
+(defmacro deftranslatorvarg
+  "Define a Disrupter EventTranslatorVararg which translate (write) data
+  representations into events claimed from the RingBuffer"
+  [name bindings & args]
+  (let [[name args] (name-with-attributes name args)]
+    `(def ~name (create-event-translator-varg (fn ~bindings ~@args)))))
 
 (defn ^ExceptionHandler create-exception-handler
   [on-event on-start on-shutdown]

@@ -65,32 +65,32 @@
       (handler event sequence))))
 
 (defn ^EventTranslatorOneArg create-event-translator-one-arg
-  "Create an EventTranslator which translate (write) data representations into
-  events claimed from the RingBuffer"
+  "Create an EventTranslatorOneArg which translate (write) data representations
+  into events claimed from the RingBuffer"
   [handler]
   (reify EventTranslatorOneArg
     (translateTo [_ event sequence arg0]
       (handler event sequence arg0))))
 
 (defn ^EventTranslatorTwoArg create-event-translator-two-arg
-  "Create an EventTranslator which translate (write) data representations into
-  events claimed from the RingBuffer"
+  "Create an EventTranslatorTwoArg which translate (write) data representations
+  into events claimed from the RingBuffer"
   [handler]
   (reify EventTranslatorTwoArg
     (translateTo [_ event sequence arg0 arg1]
       (handler event sequence arg0 arg1))))
 
 (defn ^EventTranslatorThreeArg create-event-translator-three-arg
-  "Create an EventTranslator which translate (write) data representations into
-  events claimed from the RingBuffer"
+  "Create an EventTranslatorThreeArg which translate (write) data
+  representations into events claimed from the RingBuffer"
   [handler]
   (reify EventTranslatorThreeArg
     (translateTo [_ event sequence arg0 arg1 arg2]
       (handler event sequence arg0 arg1 arg2))))
 
 (defn ^EventTranslatorVararg create-event-translator-var-arg
-  "Create an EventTranslator which translate (write) data representations into
-  events claimed from the RingBuffer"
+  "Create an EventTranslatorVararg which translate (write) data representations
+  into events claimed from the RingBuffer"
   [handler]
   (reify EventTranslatorVararg
     (translateTo [_ event sequence args]

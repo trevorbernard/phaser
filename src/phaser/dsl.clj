@@ -67,9 +67,9 @@
   (.handleEventsWith clazz (into-array EventProcessor processors)))
 
 (defmethod handle-events-with :default
-  [& args]
+  [a & args]
   (throw
-   (IllegalArgumentException. "Unsupported arguments for handles-events-with")))
+   (IllegalArgumentException. (str "Unsupported arguments for handles-events-with:" (class (first args))))))
 
 (defmulti handle-events-with-worker-pool
   "Set up a worker pool to handle events from the ring buffer."
@@ -95,18 +95,10 @@
   [& args]
   (throw (IllegalArgumentException. "Unsupported arguments for after")))
 
-(defn ^SequenceBarrier get-barrier-for [^Disruptor disruptor & handlers]
-  (.getBarrierFor disruptor (into-array EventHandler handlers)))
-
-(defn get-buffer-size
-  "The capacity of the data structure to hold entries."
-  [^Disruptor disruptor]
-  (.getBufferSize disruptor))
-
-(defn get-cursor
-  "Get the value of the cursor indicating the published sequence."
-  [^Disruptor disruptor]
-  (.getCursor disruptor))
+(defn ^SequenceBarrier get-barrier-for
+  "Get the SequenceBarrier used by a specific handler."
+  [^Disruptor disruptor ^EventHandler handler]
+  (.getBarrierFor disruptor handler))
 
 (defn handle-exceptions-with
   "Specify an exception handler to be used for any future event handlers.

@@ -16,7 +16,7 @@
     :multi ProducerType/MULTI
     :single ProducerType/SINGLE))
 
-(defn ^Disruptor disruptor
+(defn ^Disruptor create-disruptor
   "Create a new disruptor pattern"
   ([^EventFactory event-factory size ^Executor exec]
      (Disruptor. event-factory (int size) exec))

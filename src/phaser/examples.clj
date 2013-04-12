@@ -33,15 +33,18 @@
   (println "translating...")
   (setValue event "Ohai"))
 
-(defn wire-up-disruptor []
-  (let [^Disruptor disruptor (disruptor message-factory 1024 (Executors/newCachedThreadPool))]
+(defn wire-up-disruptor [exec]
+  (let [disruptor (create-disruptor message-factory 1024 exec)]
     (-> disruptor
         (handle-events-with journaller)
         (then business-logic))
     (let [rb (start disruptor)]
-      (create-event-publisher rb translator))))
+      [disruptor (create-event-publisher rb translator)])))
 
 (defn -main []
-  (let [publisher (wire-up-disruptor)]
+  (let [exec (Executors/newCachedThreadPool)
+        [disruptor publisher] (wire-up-disruptor exec)]
     (publisher)
-    (publisher)))
+    (publisher)
+    (shutdown disruptor)
+    (.shutdown exec)))

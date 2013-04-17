@@ -1,36 +1,185 @@
 (ns phaser.disruptor
-  (:import [com.lmax.disruptor ClaimStrategy EventFactory EventHandler
-            EventProcessor EventTranslator ExceptionHandler RingBuffer
-            WaitStrategy Sequence SequenceBarrier BatchEventProcessor
-            EventPublisher WorkHandler WorkerPool]
-           [com.lmax.disruptor.dsl Disruptor EventHandlerGroup]
-           [java.util.concurrent ExecutorService]))
+  "High Performance Inter-Thread Messaging Library"
+  (:use
+   [clojure.tools.macro :only [name-with-attributes]])
+  (:import
+   [com.lmax.disruptor EventFactory EventHandler EventTranslator
+    EventTranslatorOneArg EventTranslatorTwoArg EventTranslatorThreeArg
+    EventTranslatorVararg ExceptionHandler RingBuffer WorkHandler
+    Sequence SequenceBarrier WaitStrategy BatchEventProcessor WorkerPool]
+   [com.lmax.disruptor.dsl Disruptor]
+   [java.util.concurrent ExecutorService]))
 
-(defn ^EventFactory event-factory* [handler]
+(defn ^EventFactory create-event-factory
+  "Create an EventFactory which is called by the RingBuffer to pre-populate all
+   the events to fill the RingBuffer."
+  [handler]
   (reify EventFactory
     (newInstance [_]
       (handler))))
 
-(defmacro event-factory [& args]
-  `(event-factory* (fn ~@args)))
+(defmacro deffactory
+  "Define a Disruptor EventFactory which is called by the RingBuffer."
+  [name bindings & args]
+  (when-not (vector? bindings)
+    (throw
+     (IllegalArgumentException.
+      "deffactory requires a vector for its bindings")))
+  (when-not (zero? (count bindings))
+    (throw
+     (IllegalArgumentException.
+      "deffactory requires a binding with no parameters")))
+  (let [[name args] (name-with-attributes name args)]
+    `(def ~name (create-event-factory (fn ~bindings ~@args)))))
 
-(defn ^EventHandler event-handler* [handler]
-  (reify com.lmax.disruptor.EventHandler
+(defn ^EventHandler create-event-handler
+  "Create an EventHandler which is a callback interface for processing events
+  as they become available in the RingBuffer."
+  [handler]
+  (reify EventHandler
     (onEvent [_ event sequence end-of-batch?]
       (handler event sequence end-of-batch?))))
 
-(defmacro event-handler [& args]
-  `(event-handler* (fn ~@args)))
+(defmacro defhandler
+  "Define a Disruptor event handler which is a callback interface for processing
+  events as they become available in the RingBuffer."
+  [name bindings & args]
+  (when-not (vector? bindings)
+    (throw
+     (IllegalArgumentException.
+      "defhandler requires a vector for its bindings")))
+  (when-not (= 3 (count bindings))
+    (throw
+     (IllegalArgumentException.
+      "defhandler requires a binding with 3 parameters")))
+  (let [[name args] (name-with-attributes name args)]
+    `(def ~name (create-event-handler (fn ~bindings ~@args)))))
 
-(defn ^EventTranslator event-translator* [handler]
-  (reify com.lmax.disruptor.EventTranslator
+
+(defn ^WorkHandler create-work-handler
+  "Create a WorkHandler which is for processing units of work as they become
+  available in the RingBuffer."
+  [handler]
+  (reify WorkHandler
+    (onEvent [_ event]
+      (handler event))))
+
+(defn ^EventTranslator create-event-translator
+  "Create an EventTranslator which translate (write) data representations into
+  events claimed from the RingBuffer"
+  [handler]
+  (reify EventTranslator
     (translateTo [_ event sequence]
       (handler event sequence))))
 
-(defmacro event-translator [& args]
-  `(event-translator* (fn ~@args)))
+(defn ^EventTranslatorOneArg create-event-translator-one-arg
+  "Create an EventTranslatorOneArg which translate (write) data representations
+  into events claimed from the RingBuffer"
+  [handler]
+  (reify EventTranslatorOneArg
+    (translateTo [_ event sequence arg0]
+      (handler event sequence arg0))))
 
-(defn ^ExceptionHandler exception-handler
+(defn ^EventTranslatorTwoArg create-event-translator-two-arg
+  "Create an EventTranslatorTwoArg which translate (write) data representations
+  into events claimed from the RingBuffer"
+  [handler]
+  (reify EventTranslatorTwoArg
+    (translateTo [_ event sequence arg0 arg1]
+      (handler event sequence arg0 arg1))))
+
+(defn ^EventTranslatorThreeArg create-event-translator-three-arg
+  "Create an EventTranslatorThreeArg which translate (write) data
+  representations into events claimed from the RingBuffer"
+  [handler]
+  (reify EventTranslatorThreeArg
+    (translateTo [_ event sequence arg0 arg1 arg2]
+      (handler event sequence arg0 arg1 arg2))))
+
+(defn ^EventTranslatorVararg create-event-translator-var-arg
+  "Create an EventTranslatorVararg which translate (write) data representations
+  into events claimed from the RingBuffer"
+  [handler]
+  (reify EventTranslatorVararg
+    (translateTo [_ event sequence args]
+      (handler event sequence (into-array Object args)))))
+
+(defmacro deftranslator
+  "Define a Disrupter EventTranslator which translate (write) data
+  representations into events claimed from the RingBuffer"
+  [name bindings & args]
+  (when-not (vector? bindings)
+    (throw
+     (IllegalArgumentException.
+      "deftranslator requires a vector for its bindings")))
+  (when-not (= 2 (count bindings))
+    (throw
+     (IllegalArgumentException.
+      "deftranslator requires a binding with 2 parameters")))
+  (let [[name args] (name-with-attributes name args)]
+    `(def ~name (create-event-translator (fn ~bindings ~@args)))))
+
+(defmacro deftranslator1
+  "Define a Disrupter EventTranslatorOneArg which translate (write) data
+  representations into events claimed from the RingBuffer"
+  [name bindings & args]
+  (when-not (vector? bindings)
+    (throw
+     (IllegalArgumentException.
+      "deftranslator1 requires a vector for its bindings")))
+  (when-not (= 2 (count bindings))
+    (throw
+     (IllegalArgumentException.
+      "deftranslator1 requires a binding with 3 parameters")))
+  (let [[name args] (name-with-attributes name args)]
+    `(def ~name (create-event-translator-one-arg (fn ~bindings ~@args)))))
+
+(defmacro deftranslator2
+  "Define a Disrupter EventTranslatorTwoArg which translate (write) data
+  representations into events claimed from the RingBuffer"
+  [name bindings & args]
+  (when-not (vector? bindings)
+    (throw
+     (IllegalArgumentException.
+      "deftranslator2 requires a vector for its bindings")))
+  (when-not (= 2 (count bindings))
+    (throw
+     (IllegalArgumentException.
+      "deftranslator2 requires a binding with 4 parameters")))
+  (let [[name args] (name-with-attributes name args)]
+    `(def ~name (create-event-translator-two-arg (fn ~bindings ~@args)))))
+
+(defmacro deftranslator3
+  "Define a Disrupter EventTranslatorThreeArg which translate (write) data
+  representations into events claimed from the RingBuffer"
+  [name bindings & args]
+  (when-not (vector? bindings)
+    (throw
+     (IllegalArgumentException.
+      "deftranslator3 requires a vector for its bindings")))
+  (when-not (= 2 (count bindings))
+    (throw
+     (IllegalArgumentException.
+      "deftranslator3 requires a binding with 5 parameters")))
+  (let [[name args] (name-with-attributes name args)]
+    `(def ~name (create-event-translator-three-arg (fn ~bindings ~@args)))))
+
+(defmacro deftranslatorvarg
+  "Define a Disrupter EventTranslatorVararg which translate (write) data
+  representations into events claimed from the RingBuffer"
+  [name bindings & args]
+  (when-not (vector? bindings)
+    (throw
+     (IllegalArgumentException.
+      "deftranslatorvarg requires a vector for its bindings")))
+  (when-not (>= 2 (count bindings))
+    (throw
+     (IllegalArgumentException.
+      "deftranslatorvarg requires a binding with at least 2 parameters")))
+  (let [[name args] (name-with-attributes name args)]
+    `(def ~name (create-event-translator-varg (fn ~bindings ~@args)))))
+
+(defn ^ExceptionHandler create-exception-handler
   [on-event on-start on-shutdown]
   (reify com.lmax.disruptor.ExceptionHandler
     (handleEventException [_ exception sequence event]
@@ -40,116 +189,78 @@
     (handleOnShutdownException [_ exception]
       (on-shutdown exception))))
 
-(defn disruptor
-  ([^EventFactory factory size ^ExecutorService executor]
-     (Disruptor. factory (int size) executor))
-  ([^EventFactory factory ^ExecutorService executor ^ClaimStrategy claim ^WaitStrategy wait]
-     (Disruptor. factory executor claim wait)))
+(defmulti create-event-publisher
+  "Returns a function that publishes events to the RingBuffer of different arity
+  depending on which EventTranslator is being used."
+  (fn [a b] (class b)))
 
-(defn publish-event [^Disruptor disruptor ^Object event]
-  (.publishEvent disruptor event))
+(defmethod create-event-publisher EventTranslator
+  [^RingBuffer rb ^EventTranslator translator]
+  (fn []
+    (.publishEvent rb translator)))
 
-(defn dispatch-fn [_ & handlers]
-  (when (seq handlers)
-    (type (first handlers))))
+(defmethod create-event-publisher EventTranslatorOneArg
+  [^RingBuffer rb ^EventTranslatorOneArg translator]
+  (fn [arg0]
+    (.publishEvent rb translator arg0)))
 
-(defmulti handle-events-with dispatch-fn)
+(defmethod create-event-publisher EventTranslatorTwoArg
+  [^RingBuffer rb ^EventTranslatorTwoArg translator]
+  (fn [arg0 arg1]
+    (.publishEvent rb translator arg0 arg1)))
 
-(defmethod handle-events-with EventHandler [^Disruptor disruptor & handlers]
-  (.handleEventsWith disruptor (into-array EventHandler handlers)))
+(defmethod create-event-publisher EventTranslatorThreeArg
+  [^RingBuffer rb ^EventTranslatorThreeArg translator]
+  (fn [arg0 arg1 arg2]
+    (.publishEvent rb translator arg0 arg1 arg2)))
 
-(defmethod handle-events-with EventProcessor [^Disruptor disruptor & handlers]
-  (.handleEventsWith disruptor (into-array EventProcessor handlers)))
+(defmethod create-event-publisher EventTranslatorVararg
+  [^RingBuffer rb ^EventTranslatorVararg translator]
+  (fn [args]
+    (.publishEvent rb translator (object-array args))))
 
-(defmethod handle-events-with :default [_ _]
-  (throw (Exception. "Unsupported handle-event-with dispatch type")))
+(defn add-gating-sequences
+  "Add the specified gating sequences to this instance of the Disruptor. They
+  will safely and atomically added to the list of gating sequences."
+  [^RingBuffer rb sequences]
+  (.addGatingSequences rb (into-array Sequence sequences)))
 
-(defmulti then dispatch-fn)
+(defn create-multi-producer
+  ([^EventFactory factory size]
+     (RingBuffer/createMultiProducer factory (int size)))
+  ([^EventFactory factory size ^WaitStrategy strategy]
+     (RingBuffer/createMultiProducer factory (int size) strategy)))
 
-(defmethod then EventHandler [^Disruptor disruptor & handlers]
-  (.then disruptor (into-array EventHandler handlers)))
+(defn create-single-producer
+  ([^EventFactory factory size]
+     (RingBuffer/createSingleProducer factory (int size)))
+  ([^EventFactory factory size ^WaitStrategy strategy]
+     (RingBuffer/createSingleProducer factory (int size) strategy)))
 
-(defmethod then EventProcessor [^Disruptor disruptor & handlers]
-  (.then disruptor (into-array EventProcessor  handlers)))
+(defn get-sequence
+  [rb ^long sequence]
+  (.get rb sequence))
 
-(defmethod then :default [_ _]
-  (throw (Exception. "Unsupported then dispatch type")))
+(defn get-cursor
+  [rb ^long sequence]
+  (.getCursor rb sequence))
 
-(defmulti after dispatch-fn)
-
-(defmethod after EventHandler [^Disruptor disruptor & handlers]
-  (.after disruptor (into-array EventHandler handlers)))
-
-(defmethod after EventProcessor [^Disruptor disruptor & handlers]
-  (.after disruptor (into-array EventProcessor  handlers)))
-
-(defmethod after :default [_ _]
-  (throw (Exception. "Unsupported then dispatch type")))
-
-(defn handle-exceptions-with [^Disruptor disruptor ^ExceptionHandler exception-handler]
-  (.handleExceptionsWith disruptor exception-handler))
-
-(defn handle-exceptions-for [^Disruptor disruptor ^EventHandler event-handler]
-  (.handleExceptionsFor disruptor event-handler))
-
-(defn ^RingBuffer start [^Disruptor disruptor]
-  (.start disruptor))
-
-(defn halt [^Disruptor disruptor]
-  (.halt disruptor))
-
-(defn shutdown [^Disruptor disruptor]
-  (.shutdown disruptor))
-
-(defn get-ring-buffer [^Disruptor disruptor]
-  (.getRingBuffer disruptor))
-
-(defn get-cursor [^Disruptor disruptor]
-  (.getCursor disruptor))
-
-(defn get-buffer-size [^Disruptor disruptor]
-  (.getBufferSize disruptor))
-
-(defn ^RingBuffer create-ring-buffer
-  ([^EventFactory factory ^Integer buffer-size]
-     (RingBuffer. factory buffer-size))
-  ([^EventFactory factory ^ClaimStrategy claim-strategy ^WaitStrategy wait-strategy]
-     (RingBuffer. factory claim-strategy wait-strategy)))
+(defn get-buffer-size
+  [rb]
+  (.getBufferSize rb))
 
 (defn ^SequenceBarrier create-sequence-barrier
-  [^RingBuffer ring-buffer & sequences]
-  (.newBarrier ring-buffer (into-array Sequence sequences)))
-
-(defn set-gating-sequences
-  [^RingBuffer ring-buffer & sequences]
-  (.setGatingSequences ring-buffer (into-array Sequence sequences)))
+  [^RingBuffer rb sequences]
+  (.newBarrier rb (into-array Sequence sequences)))
 
 (defn ^BatchEventProcessor create-batch-event-processor
-  [^RingBuffer ring-buffer ^SequenceBarrier barrier ^EventHandler handler]
-  (BatchEventProcessor. ring-buffer barrier handler))
+  [^RingBuffer rb ^SequenceBarrier barrier ^EventHandler handler]
+  (BatchEventProcessor. rb barrier handler))
 
-(defn stop-event-processor
-  [^BatchEventProcessor processor]
-  (.halt processor))
-
-(defn ^EventPublisher create-event-publisher
-  [^RingBuffer ring-buffer]
-  (EventPublisher. ring-buffer))
-
-(defn send-event-with-publisher
-  [^EventPublisher publisher ^EventTranslator translator]
-  (.publishEvent publisher translator))
-
-(defn ^WorkHandler work-handler* [handler]
-  (reify com.lmax.disruptor.WorkHandler
-    (onEvent [_ event]
-      (handler event))))
-
-(defmacro work-handler [& args]
-  `(work-handler* (fn ~@args)))
-
-(defn worker-pool
-  ([^EventFactory factory ^ClaimStrategy claim ^WaitStrategy wait ^ExceptionHandler exception handlers]
-   (WorkerPool. factory claim wait exception (into-array WorkHandler handlers)))
-  ([^RingBuffer ring ^SequenceBarrier barrier ^ExceptionHandler exception handlers]
-   (WorkerPool. ring barrier exception (into-array WorkHandler handlers))))
+(defn create-worker-pool
+  ([^EventFactory factory ^ExceptionHandler exception-handler handlers]
+     (WorkerPool. factory exception-handler (into-array EventHandler handlers)))
+  ([^RingBuffer rb ^SequenceBarrier sb ^ExceptionHandler exception-handler
+    handlers]
+     (WorkerPool. rb sb exception-handler (into-array ExceptionHandler
+                                                      handlers))))

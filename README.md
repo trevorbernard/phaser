@@ -8,7 +8,7 @@ A Clojure DSL for the LMAX Disruptor
 
 Add the following dependency to your `project.clj` file:
 
-    [userevents/phaser "1.1.1"]
+    [userevents/phaser "1.1.2"]
 
 ## License
 

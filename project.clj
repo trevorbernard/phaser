@@ -1,4 +1,4 @@
-(defproject userevents/phaser "1.1.2"
+(defproject userevents/phaser "1.1.3-SNAPSHOT"
   :description "A Clojure DSL for the LMAX Disruptor"
   :url "https://github.com/userevents/phaser"
   :license {:name "Apache License, Version 2.0"

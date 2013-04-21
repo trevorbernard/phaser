@@ -10,6 +10,11 @@ Add the following dependency to your `project.clj` file:
 
     [userevents/phaser "1.1.2"]
 
+## Documentation
+
+* [Wiki](https://github.com/userevents/phaser/wiki)
+* [API docs](http://userevents.github.io/phaser)
+
 ## License
 
 Copyright © 2013 UserEvents Inc.

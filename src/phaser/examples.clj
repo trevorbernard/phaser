@@ -13,14 +13,11 @@
 ;; limitations under the License.
 
 (ns phaser.examples
-  (:refer-clojure :exclude [and])
-  (:use
-   phaser.disruptor
-   phaser.dsl)
-  (:import
-   java.util.concurrent.Executors
-   [com.lmax.disruptor EventHandler]
-   [com.lmax.disruptor.dsl Disruptor]))
+  (:require [phaser
+             [disruptor
+              :refer [defhandler deftranslator]
+              :as disruptor]
+             [dsl :as dsl]]))
 
 (defprotocol IMessage
   (getValue [_])
@@ -31,34 +28,54 @@
   (getValue [_] value)
   (setValue [_ v] (set! value v)))
 
-(deffactory message-factory []
-  (Message. nil))
+(def message-factory
+  (disruptor/create-event-factory #(->Message nil)))
 
+;;The defhandler macro is useful when the defined macro does not require
+;;internal state
 (defhandler journaller
-  [^Message event ^long sequence end-of-batch?]
-  (println "Journalling..."))
+  [event sequence end-of-batch?]
+  (println "Journalling..." (getValue event)))
 
-(defhandler business-logic
-  [^Message event ^long sequence end-of-batch?]
-  (println "Getting work done..."))
+;;When internal state is required in a handler, a little more work
+;;is required. The event handler must be wrapped in order to contain
+;;the state in a closure. For maximum speed you can define a mutable
+;;type similar to the Message above and enclose an instantiation of
+;;the type.
+(defn create-business-logic
+  []
+  (let [state (atom 0)]
+    (disruptor/create-event-handler
+     (fn [event sequence end-of-batch?]
+       (println "Getting work done..."
+                (swap! state inc))))))
 
 (deftranslator translator
-  [^Message event ^long sequence]
+  [event sequence]
   (println "translating...")
   (setValue event "Ohai"))
 
 (defn wire-up-disruptor [exec]
-  (let [disruptor (create-disruptor message-factory 1024 exec)]
+  (let [disruptor (dsl/create-disruptor message-factory 1024 exec)]
     (-> disruptor
-        (handle-events-with journaller)
-        (then business-logic))
-    (let [rb (start disruptor)]
-      [disruptor (create-event-publisher rb translator)])))
+        (dsl/handle-events-with journaller)
+        (dsl/then (create-business-logic)))
+    (let [rb (dsl/start disruptor)]
+      [disruptor (disruptor/create-event-publisher rb translator)])))
 
 (defn -main []
-  (let [exec (Executors/newCachedThreadPool)
+  (let [exec (java.util.concurrent.Executors/newCachedThreadPool)
         [disruptor publisher] (wire-up-disruptor exec)]
     (publisher)
     (publisher)
-    (shutdown disruptor)
+    (dsl/shutdown disruptor)
     (.shutdown exec)))
+
+;; Sample output:
+; $ lein run
+; translating...
+; translating...
+; Journalling... Ohai
+; Journalling... Ohai
+; Getting work done... 1
+; Getting work done... 2

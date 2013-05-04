@@ -141,7 +141,7 @@
     (throw
      (IllegalArgumentException.
       "deftranslator1 requires a vector for its bindings")))
-  (when-not (= 2 (count bindings))
+  (when-not (= 3 (count bindings))
     (throw
      (IllegalArgumentException.
       "deftranslator1 requires a binding with 3 parameters")))
@@ -156,7 +156,7 @@
     (throw
      (IllegalArgumentException.
       "deftranslator2 requires a vector for its bindings")))
-  (when-not (= 2 (count bindings))
+  (when-not (= 4 (count bindings))
     (throw
      (IllegalArgumentException.
       "deftranslator2 requires a binding with 4 parameters")))
@@ -171,7 +171,7 @@
     (throw
      (IllegalArgumentException.
       "deftranslator3 requires a vector for its bindings")))
-  (when-not (= 2 (count bindings))
+  (when-not (= 5 (count bindings))
     (throw
      (IllegalArgumentException.
       "deftranslator3 requires a binding with 5 parameters")))

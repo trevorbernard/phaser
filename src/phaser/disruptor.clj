@@ -34,16 +34,17 @@
 
 (defmacro deffactory
   "Define a Disruptor EventFactory which is called by the RingBuffer."
-  [name bindings & args]
-  (when-not (vector? bindings)
-    (throw
-     (IllegalArgumentException.
-      "deffactory requires a vector for its bindings")))
-  (when-not (zero? (count bindings))
-    (throw
-     (IllegalArgumentException.
-      "deffactory requires a binding with no parameters")))
-  (let [[name args] (name-with-attributes name args)]
+  [name & args]
+  (let [[name args] (name-with-attributes name args)
+        [bindings & args] args]
+    (when-not (vector? bindings)
+      (throw
+       (IllegalArgumentException.
+        "deffactory requires a vector for its bindings")))
+    (when-not (zero? (count bindings))
+      (throw
+       (IllegalArgumentException.
+        "deffactory requires a binding with no parameters")))
     `(def ~name (create-event-factory (fn ~bindings ~@args)))))
 
 (defn ^EventHandler create-event-handler
@@ -57,16 +58,17 @@
 (defmacro defhandler
   "Define a Disruptor event handler which is a callback interface for processing
   events as they become available in the RingBuffer."
-  [name bindings & args]
-  (when-not (vector? bindings)
-    (throw
-     (IllegalArgumentException.
-      "defhandler requires a vector for its bindings")))
-  (when-not (= 3 (count bindings))
-    (throw
-     (IllegalArgumentException.
-      "defhandler requires a binding with 3 parameters")))
-  (let [[name args] (name-with-attributes name args)]
+  [name & args]
+  (let [[name args] (name-with-attributes name args)
+        [bindings & args] args]
+    (when-not (vector? bindings)
+      (throw
+       (IllegalArgumentException.
+        "defhandler requires a vector for its bindings")))
+    (when-not (= 3 (count bindings))
+      (throw
+       (IllegalArgumentException.
+        "defhandler requires a binding with 3 parameters")))
     `(def ~name (create-event-handler (fn ~bindings ~@args)))))
 
 
@@ -121,76 +123,81 @@
 (defmacro deftranslator
   "Define a Disrupter EventTranslator which translate (write) data
   representations into events claimed from the RingBuffer"
-  [name bindings & args]
-  (when-not (vector? bindings)
-    (throw
-     (IllegalArgumentException.
-      "deftranslator requires a vector for its bindings")))
-  (when-not (= 2 (count bindings))
-    (throw
-     (IllegalArgumentException.
-      "deftranslator requires a binding with 2 parameters")))
-  (let [[name args] (name-with-attributes name args)]
+  [name & args]
+  (let [[name args] (name-with-attributes name args)
+        [bindings & args] args]
+    (when-not (vector? bindings)
+      (throw
+       (IllegalArgumentException.
+        "deftranslator requires a vector for its bindings")))
+    (when-not (= 2 (count bindings))
+      (throw
+       (IllegalArgumentException.
+        "deftranslator requires a binding with 2 parameters")))
     `(def ~name (create-event-translator (fn ~bindings ~@args)))))
 
 (defmacro deftranslator1
   "Define a Disrupter EventTranslatorOneArg which translate (write) data
   representations into events claimed from the RingBuffer"
-  [name bindings & args]
-  (when-not (vector? bindings)
-    (throw
-     (IllegalArgumentException.
-      "deftranslator1 requires a vector for its bindings")))
-  (when-not (= 3 (count bindings))
-    (throw
-     (IllegalArgumentException.
-      "deftranslator1 requires a binding with 3 parameters")))
-  (let [[name args] (name-with-attributes name args)]
+  [name & args]
+  (let [[name args] (name-with-attributes name args)
+        [bindings & args] args]
+    (when-not (vector? bindings)
+      (throw
+       (IllegalArgumentException.
+        "deftranslator1 requires a vector for its bindings")))
+    (when-not (= 3 (count bindings))
+      (throw
+       (IllegalArgumentException.
+        "deftranslator1 requires a binding with 3 parameters")))
     `(def ~name (create-event-translator-one-arg (fn ~bindings ~@args)))))
 
 (defmacro deftranslator2
   "Define a Disrupter EventTranslatorTwoArg which translate (write) data
   representations into events claimed from the RingBuffer"
-  [name bindings & args]
-  (when-not (vector? bindings)
-    (throw
-     (IllegalArgumentException.
-      "deftranslator2 requires a vector for its bindings")))
-  (when-not (= 4 (count bindings))
-    (throw
-     (IllegalArgumentException.
-      "deftranslator2 requires a binding with 4 parameters")))
-  (let [[name args] (name-with-attributes name args)]
+  [name & args]
+  (let [[name args] (name-with-attributes name args)
+        [bindings & args] args]
+    (when-not (vector? bindings)
+      (throw
+       (IllegalArgumentException.
+        "deftranslator2 requires a vector for its bindings")))
+    (when-not (= 4 (count bindings))
+      (throw
+       (IllegalArgumentException.
+        "deftranslator2 requires a binding with 4 parameters")))
     `(def ~name (create-event-translator-two-arg (fn ~bindings ~@args)))))
 
 (defmacro deftranslator3
   "Define a Disrupter EventTranslatorThreeArg which translate (write) data
   representations into events claimed from the RingBuffer"
-  [name bindings & args]
-  (when-not (vector? bindings)
-    (throw
-     (IllegalArgumentException.
-      "deftranslator3 requires a vector for its bindings")))
-  (when-not (= 5 (count bindings))
-    (throw
-     (IllegalArgumentException.
-      "deftranslator3 requires a binding with 5 parameters")))
-  (let [[name args] (name-with-attributes name args)]
+  [name & args]
+  (let [[name args] (name-with-attributes name args)
+        [bindings & args] args]
+    (when-not (vector? bindings)
+      (throw
+       (IllegalArgumentException.
+        "deftranslator3 requires a vector for its bindings")))
+    (when-not (= 5 (count bindings))
+      (throw
+       (IllegalArgumentException.
+        "deftranslator3 requires a binding with 5 parameters")))
     `(def ~name (create-event-translator-three-arg (fn ~bindings ~@args)))))
 
 (defmacro deftranslatorvarg
   "Define a Disrupter EventTranslatorVararg which translate (write) data
   representations into events claimed from the RingBuffer"
-  [name bindings & args]
-  (when-not (vector? bindings)
-    (throw
-     (IllegalArgumentException.
-      "deftranslatorvarg requires a vector for its bindings")))
-  (when-not (>= 2 (count bindings))
-    (throw
-     (IllegalArgumentException.
-      "deftranslatorvarg requires a binding with at least 2 parameters")))
-  (let [[name args] (name-with-attributes name args)]
+  [name & args]
+  (let [[name args] (name-with-attributes name args)
+        [bindings & args] args]
+    (when-not (vector? bindings)
+      (throw
+       (IllegalArgumentException.
+        "deftranslatorvarg requires a vector for its bindings")))
+    (when-not (>= 2 (count bindings))
+      (throw
+       (IllegalArgumentException.
+        "deftranslatorvarg requires a binding with at least 2 parameters")))
     `(def ~name (create-event-translator-varg (fn ~bindings ~@args)))))
 
 (defn ^ExceptionHandler create-exception-handler

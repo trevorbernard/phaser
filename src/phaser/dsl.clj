@@ -99,11 +99,11 @@
 
 (defmethod ^EventHandlerGroup after EventHandler
   [^Disruptor disruptor & handlers]
-  (.handleEventsWith disruptor (into-array EventHandler handlers)))
+  (.after disruptor (into-array EventHandler handlers)))
 
 (defmethod ^EventHandlerGroup after EventProcessor
   [^Disruptor disruptor & processors]
-  (.handleEventsWith disruptor (into-array EventProcessor processors)))
+  (.after disruptor (into-array EventProcessor processors)))
 
 (defmethod after :default
   [& args]

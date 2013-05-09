@@ -261,15 +261,15 @@
 
 (defn event-for-sequence
   "Returns the event for a given sequence in the Ring Buffer"
-  [rb ^long sequence]
+  [^RingBuffer rb ^long sequence]
   (.get rb sequence))
 
 (defn get-cursor
-  [rb]
+  [^RingBuffer rb]
   (.getCursor rb))
 
 (defn get-buffer-size
-  [rb]
+  [^RingBuffer rb]
   (.getBufferSize rb))
 
 (defn ^Sequence get-sequence
@@ -287,7 +287,7 @@
 (defn ^BatchEventProcessor handle-exceptions-with
   [^BatchEventProcessor batch-processor ^ExceptionHandler exception-handler]
   (doto batch-processor
-    (.handleExceptionsWith exception-handler)))
+    (.setExceptionHandler exception-handler)))
 
 (defn create-worker-pool
   ([^EventFactory factory ^ExceptionHandler exception-handler handlers]

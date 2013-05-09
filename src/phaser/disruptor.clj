@@ -114,11 +114,12 @@
 
 (defn ^EventTranslatorVararg create-event-translator-var-arg
   "Create an EventTranslatorVararg which translate (write) data representations
-  into events claimed from the RingBuffer"
+  into events claimed from the RingBuffer. The Handler should accept a variadic
+  number of params"
   [handler]
   (reify EventTranslatorVararg
     (translateTo [_ event sequence args]
-      (handler event sequence (into-array Object args)))))
+      (apply handler event sequence args))))
 
 (defmacro deftranslator
   "Define a Disrupter EventTranslator which translate (write) data

@@ -79,7 +79,7 @@
 
 (deftest event-tranlator-var-test []
   (let [translator (create-event-translator-var-arg
-                    (fn [event sequence args]
+                    (fn [event sequence & args]
                       (reset! event (str "hi" (apply str args)))))]
     (is (instance? EventTranslatorVararg translator))
     (let [event (atom nil)]

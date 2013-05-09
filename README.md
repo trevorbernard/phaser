@@ -8,7 +8,13 @@ A Clojure DSL for the LMAX Disruptor
 
 Add the following dependency to your `project.clj` file:
 
-    [userevents/phaser "1.1.2"]
+```clojure
+;Stable
+[userevents/phaser "1.1.2"]
+
+;or for the brave, use the cutting edge
+[userevents/phaser "1.1.3-SNAPSHOT"]
+```
 
 ## Documentation
 

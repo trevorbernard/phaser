@@ -21,7 +21,7 @@
     EventTranslatorOneArg EventTranslatorTwoArg EventTranslatorThreeArg
     EventTranslatorVararg ExceptionHandler RingBuffer WorkHandler
     Sequence SequenceBarrier WaitStrategy BatchEventProcessor WorkerPool
-    EventProcessor]
+    EventProcessor SequenceGroup]
    [com.lmax.disruptor.dsl Disruptor]
    [java.util.concurrent ExecutorService]))
 
@@ -275,6 +275,10 @@
 (defn ^Sequence get-sequence
   [^EventProcessor event-processor]
   (.getSequence event-processor))
+
+(defn add-sequence
+  [^SequenceGroup sequence-group ^Sequence sequence]
+  (.add sequence-group sequence))
 
 (defn ^SequenceBarrier create-sequence-barrier
   [^RingBuffer rb sequences]

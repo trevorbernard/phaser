@@ -20,7 +20,8 @@
    [com.lmax.disruptor EventFactory EventHandler EventTranslator
     EventTranslatorOneArg EventTranslatorTwoArg EventTranslatorThreeArg
     EventTranslatorVararg ExceptionHandler RingBuffer WorkHandler
-    Sequence SequenceBarrier WaitStrategy BatchEventProcessor WorkerPool]
+    Sequence SequenceBarrier WaitStrategy BatchEventProcessor WorkerPool
+    EventProcessor]
    [com.lmax.disruptor.dsl Disruptor]
    [java.util.concurrent ExecutorService]))
 
@@ -259,17 +260,22 @@
   ([^EventFactory factory size ^WaitStrategy strategy]
      (RingBuffer/createSingleProducer factory (int size) strategy)))
 
-(defn get-sequence
-  [rb ^long sequence]
+(defn event-for-sequence
+  "Returns the event for a given sequence in the Ring Buffer"
+  [^RingBuffer rb ^long sequence]
   (.get rb sequence))
 
 (defn get-cursor
-  [rb ^long sequence]
-  (.getCursor rb sequence))
+  [^RingBuffer rb]
+  (.getCursor rb))
 
 (defn get-buffer-size
-  [rb]
+  [^RingBuffer rb]
   (.getBufferSize rb))
+
+(defn ^Sequence get-sequence
+  [^EventProcessor event-processor]
+  (.getSequence event-processor))
 
 (defn ^SequenceBarrier create-sequence-barrier
   [^RingBuffer rb sequences]
@@ -278,6 +284,11 @@
 (defn ^BatchEventProcessor create-batch-event-processor
   [^RingBuffer rb ^SequenceBarrier barrier ^EventHandler handler]
   (BatchEventProcessor. rb barrier handler))
+
+(defn ^BatchEventProcessor handle-exceptions-with
+  [^BatchEventProcessor batch-processor ^ExceptionHandler exception-handler]
+  (doto batch-processor
+    (.setExceptionHandler exception-handler)))
 
 (defn create-worker-pool
   ([^EventFactory factory ^ExceptionHandler exception-handler handlers]

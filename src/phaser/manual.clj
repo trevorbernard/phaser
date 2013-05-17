@@ -19,7 +19,7 @@
     Sequence SequenceBarrier WaitStrategy BatchEventProcessor WorkerPool ExceptionHandler
     EventProcessor SequenceGroup WaitStrategy Cursored FatalExceptionHandler IgnoreExceptionHandler
     BlockingWaitStrategy BusySpinWaitStrategy PhasedBackoffWaitStrategy SleepingWaitStrategy
-    TimeoutBlockingWaitStrategy YieldingWaitStrategy]))
+    TimeoutBlockingWaitStrategy YieldingWaitStrategy EventProcessor]))
 
 ;;Sometimes you just have to roll your own
 
@@ -84,6 +84,14 @@
   [^RingBuffer rb & sequences]
   (.newBarrier rb (into-array Sequence sequences)))
 
+(defn alerted?
+  [^SequenceBarrier sb]
+  (.isAlerted sb))
+
+(defn clear-alert
+  [^SequenceBarrier sb]
+  (.clearAlert sb))
+
 (defn ^BatchEventProcessor set-exception-handler
   [^BatchEventProcessor bep exception-handler]
   (when-let [handler (create-exception-handler (or exception-handler :none))]
@@ -92,7 +100,12 @@
 
 (defn ^BatchEventProcessor create-batch-event-processor
   [^DataProvider rb ^SequenceBarrier barrier ^EventHandler handler & {:keys [exception-handler]}]
-  (BatchEventProcessor. rb barrier handler))
+  (doto (BatchEventProcessor. rb barrier handler)
+    (set-exception-handler exception-handler)))
+
+(defn halt-event-processor
+  [^EventProcessor ep]
+  (.halt ep))
 
 (defn ^WorkerPool create-worker-pool
   [^RingBuffer rb ^SequenceBarrier barrier ^ExceptionHandler e-handler & work-handlers]
@@ -107,13 +120,19 @@
   (.getWorkerSequences wp))
 
 (defn ^Sequence get-sequence
-  [^BatchEventProcessor bep]
-  (.getSequence bep))
+  [^EventProcessor ep]
+  (.getSequence ep))
 
 (defn ^SequenceGroup add-to-sequence-group
   [^SequenceGroup group & sequences]
   (doseq [^Sequence sequence sequences]
     (.add group sequence))
+  group)
+
+(defn ^SequenceGroup remove-from-sequence-group
+  [^SequenceGroup group & sequences]
+  (doseq [^Sequence sequence sequences]
+    (.remove group sequence))
   group)
 
 (defn ^SequenceGroup sequence-group

@@ -137,8 +137,9 @@
 
 (defn ^SequenceGroup sequence-group
   [& sequences]
-  (doto (SequenceGroup.)
-    (add-to-sequence-group sequence)))
+  (let [sg (SequenceGroup.)]
+    (apply add-to-sequence-group sg sequences)
+    sg))
 
 (defn ^SequenceGroup add-to-running-sequence-group
   [^Cursored rb ^SequenceGroup group & sequences]

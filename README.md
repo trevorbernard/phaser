@@ -10,10 +10,10 @@ Add the following dependency to your `project.clj` file:
 
 ```clojure
 ;Stable
-[userevents/phaser "1.1.2"]
+[userevents/phaser "1.1.3"]
 
 ;or for the brave, use the cutting edge
-[userevents/phaser "1.1.3-SNAPSHOT"]
+[userevents/phaser "1.1.4-SNAPSHOT"]
 ```
 
 ## Documentation

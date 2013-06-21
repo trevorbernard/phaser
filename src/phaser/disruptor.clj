@@ -196,7 +196,7 @@
       (throw
        (IllegalArgumentException.
         "deftranslatorvarg requires a vector for its bindings")))
-    (when-not (>= 2 (count bindings))
+    (when-not (>= (count bindings) 2)
       (throw
        (IllegalArgumentException.
         "deftranslatorvarg requires a binding with at least 2 parameters")))

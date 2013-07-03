@@ -239,7 +239,7 @@
 
 (defmethod create-event-publisher EventTranslatorVararg
   [^RingBuffer rb ^EventTranslatorVararg translator]
-  (fn [args]
+  (fn [& args]
     (.publishEvent rb translator (object-array args))))
 
 (defn add-gating-sequences

@@ -200,7 +200,7 @@
       (throw
        (IllegalArgumentException.
         "deftranslatorvarg requires a binding with at least 2 parameters")))
-    `(def ~name (create-event-translator-varg (fn ~bindings ~@args)))))
+    `(def ~name (create-event-translator-var-arg (fn ~bindings ~@args)))))
 
 (defn ^ExceptionHandler create-exception-handler
   [on-event on-start on-shutdown]

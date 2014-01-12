@@ -1,4 +1,4 @@
-;; Copyright 2013 UserEvents Inc.
+;; Copyright 2013-2014 UserEvents Inc.
 ;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.

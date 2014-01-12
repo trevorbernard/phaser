@@ -5,7 +5,7 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.lmax/disruptor "3.2.0"]
-                 [org.clojure/tools.macro "0.1.2"]]
+                 [org.clojure/tools.macro "0.1.5"]]
   :profiles
   {:1.2.1 {:dependencies [[org.clojure/clojure "1.2.1"]]}
    :1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}

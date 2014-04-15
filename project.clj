@@ -3,14 +3,15 @@
   :url "https://github.com/userevents/phaser"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[org.clojure/clojure "1.5.1"]
+  :dependencies [[org.clojure/clojure "1.6.0"]
                  [com.lmax/disruptor "3.2.1"]
                  [org.clojure/tools.macro "0.1.5"]]
   :profiles
   {:1.2.1 {:dependencies [[org.clojure/clojure "1.2.1"]]}
    :1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}
-   :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}}
-  :aliases {"all" ["with-profile" "dev:1.2.1:1.3:1.4"]}
+   :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}
+   :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}}
+  :aliases {"all" ["with-profile" "dev:1.2.1:1.3:1.4:1.5.1"]}
   :min-lein-version "2.0.0"
   :main phaser.examples
   :pom-addition [:developers
